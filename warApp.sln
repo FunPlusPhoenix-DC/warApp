@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "warApp", "warApp.vcxproj", "{BC951C94-50E0-46DD-B727-1B54EE6D1010}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Debug|x64.ActiveCfg = Debug|x64
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Debug|x64.Build.0 = Debug|x64
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Debug|x86.ActiveCfg = Debug|Win32
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Debug|x86.Build.0 = Debug|Win32
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Release|x64.ActiveCfg = Release|x64
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Release|x64.Build.0 = Release|x64
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Release|x86.ActiveCfg = Release|Win32
+		{BC951C94-50E0-46DD-B727-1B54EE6D1010}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A77C3240-8CF0-4CB7-A35E-68F16BACE089}
+	EndGlobalSection
+EndGlobal

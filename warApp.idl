@@ -1,0 +1,29 @@
+﻿// warApp.idl: warApp.exe 的类型库源
+
+// 此文件将由 MIDL 编译器处理以产生
+// 类型库(warApp.tlb)。
+
+[ uuid(683abf5d-44e4-4aa1-a66c-74abc788aaf5), version(1.0) ]
+library warApp
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  CwarAppDoc 的主调度接口
+
+	[ uuid(65174735-235b-461f-9600-df46259b7341) ]
+	dispinterface IwarApp
+	{
+		properties:
+
+		methods:
+	};
+
+	//  CwarAppDoc 的类信息
+
+	[ uuid(775ba55b-5ad4-472b-bdbd-36160b27ca4f) ]
+	coclass warApp
+	{
+		[default] dispinterface IwarApp;
+	};
+};
