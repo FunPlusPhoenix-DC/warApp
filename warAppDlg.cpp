@@ -214,7 +214,7 @@ BOOL CwarAppDlg::CanExit()
 void CwarAppDlg::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	int iRet = InitLogger("D:/WarDll");
+	int iRet = InitLogger("D:/WarDllLog");
 
 	if (!iRet)
 	{
