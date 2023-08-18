@@ -10,6 +10,8 @@
 #include "afxdialogex.h"
 #include <iostream>
 #include <xstring>
+#include <WinUser.h>
+
 
 #pragma warning (disable:4996)
 
@@ -61,6 +63,8 @@ CwarAppDlg::CwarAppDlg(CWnd* pParent /*=nullptr*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pAutoProxy = nullptr;
+	p_PictureOfHero = new CWnd();
+	
 }
 
 CwarAppDlg::~CwarAppDlg()
@@ -70,11 +74,20 @@ CwarAppDlg::~CwarAppDlg()
 	//  此代理知道该对话框已被删除。
 	if (m_pAutoProxy != nullptr)
 		m_pAutoProxy->m_pDialog = nullptr;
+
+	//delete target
+	if (p_PictureOfHero != nullptr)
+	{
+		p_PictureOfHero->DestroyWindow();
+		p_PictureOfHero = NULL;
+	}
+	
 }
 
 void CwarAppDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PIC_HERO, showPicByguide);
 }
 
 BEGIN_MESSAGE_MAP(CwarAppDlg, CDialogEx)
@@ -83,6 +96,7 @@ BEGIN_MESSAGE_MAP(CwarAppDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CwarAppDlg::OnBnClickedButton1)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -117,8 +131,13 @@ BOOL CwarAppDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	// TODO: 在此添加额外的初始化代码
+	
 
+	// TODO: 在此添加额外的初始化代码
+	::GetWindowRect(m_hWnd, m_DlgOriginRect);
+	ScreenToClient(&m_DlgOriginRect);
+	::GetWindowRect(GetDlgItem(IDOK)->m_hWnd, m_DlgOriginRectBTN_OK);
+	ScreenToClient(&m_DlgOriginRectBTN_OK);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -157,9 +176,23 @@ void CwarAppDlg::OnPaint()
 
 		// 绘制图标
 		dc.DrawIcon(x, y, m_hIcon);
+
 	}
 	else
 	{
+		//begin set parameter to target.
+		p_PictureOfHero = GetDlgItem(IDC_PIC_HERO);
+		//_T("C:\\Users\\37494\\Pictures\\Saved Pictures\\miku.jpg")
+		CImage cimg_HeroPic;
+		cimg_HeroPic.Load(_T("C:\\Users\\37494\\Pictures\\Saved Pictures\\miku.jpg"));
+		RECT rec_IdcPicHero;
+		p_PictureOfHero->GetWindowRect(&rec_IdcPicHero);
+		CDC* pcdc_PictureOfHero = p_PictureOfHero->GetDC();
+		pcdc_PictureOfHero->SetStretchBltMode(HALFTONE);	//保证拉伸后的图片不失真
+		cimg_HeroPic.StretchBlt(pcdc_PictureOfHero->m_hDC, CRect(0, 0, 60, 19), 0); //实现图片大小
+		cimg_HeroPic.Draw(pcdc_PictureOfHero->m_hDC,0,0,192,108);
+		p_PictureOfHero->UpdateData();
+		//end set parameter to target.
 		CDialogEx::OnPaint();
 	}
 }
@@ -210,18 +243,26 @@ BOOL CwarAppDlg::CanExit()
 }
 
 
-
 void CwarAppDlg::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	int iRet = InitLogger("D:/WarDllLog");
+	DWORD iRet = InitLogger("D:/WarDllLog");
 
 	if (!iRet)
 	{
 		MessageBoxA(NULL, "Success to init", "iii", 0);
 	}
+	else
+	{
+		char szError[40]{ 0 };
+		sprintf(szError, "GetlastError: %d", GetLastError());
+		MessageBoxA(NULL, szError, "Warning", 0);
+	}
+	char szLog[50]{ 0 };
 
-	iRet = ExecuteLogger(std::string("This is first log"));
+	sprintf(szLog, "%s", "This is english version");
+
+	iRet = ExecuteLogger((LPVOID)szLog);
 
 	if (iRet != 0)
 	{
@@ -232,7 +273,152 @@ void CwarAppDlg::OnBnClickedButton1()
 
 	HeroMain hm;
 
+	RECT* picRect = new RECT; //原本用了CRECT，现在换回RECT看看结果。
+
+	GetDlgItem(IDOK)->GetWindowRect(picRect);
+
+	char szBuffer[256]{ 0 };
+
+	sprintf(szBuffer, "left-top:%d-%d \n right-bottom:%d-%d",
+		picRect->left,
+		picRect->top,
+		picRect->right,
+		picRect->bottom);
+
+	char szPosition[250]{ 0 };
+
+	CRect buttonPosition;
+
+	POINT okPosition;
+
+	GetDlgItem(IDOK)->GetWindowRect(&buttonPosition);
+	ScreenToClient(&buttonPosition);
+
+	sprintf(szPosition, "position is below : \n "
+		"(x,y)->(%d,%d)\n",
+		buttonPosition.left,buttonPosition.top);
+
+	MessageBoxA(NULL, szPosition, "position", 0);
+
+	MessageBoxA(NULL, szBuffer, "OK's square", 0);
+
+	delete picRect;
+
+	picRect = NULL;
+
 	hm.SetName("PathFinder");
 
 	MessageBoxA(NULL, hm.GetName(), "Test", 0);
+}
+
+
+void CwarAppDlg::RePaint(UINT ID, double cx , double cy)
+{
+	CRect rect;
+
+	CWnd* p_wnd = NULL;
+
+	p_wnd = GetDlgItem(ID);
+
+	if (p_wnd == NULL)
+	{
+		MessageBox(_T("No selected ID"), NULL, 0);
+		return;
+	}
+
+	//p_wnd->GetWindowRect(&rect);
+
+	//ScreenToClient(&rect);
+
+		double ivalueX = cx * 1.0 / iOriginCX;
+		double ivalueY = cy * 1.0 / iOriginCY;
+		TRACE(_T("aaaiOriginCX:%f"), iOriginCX);
+		TRACE(_T("aaaiOriginCY:%f"), iOriginCY);
+		NEWPOS data{ 0 };
+
+		if (ivalueX != 0)
+		{
+			data.lleftX = long((double)ivalueX * rect.left);
+			data.bSet = true;
+			rect.left = (double)ivalueX * m_DlgOriginRectBTN_OK.left;
+			rect.right = (double)ivalueX * m_DlgOriginRectBTN_OK.right;
+			TRACE(_T("m_DlgOriginRectBTN_OK.left:%f"), m_DlgOriginRectBTN_OK.left);
+		}
+		if (ivalueY != 0)
+		{
+			data.ltopY = long((double)ivalueY * rect.top);
+			rect.top = (double)ivalueY * m_DlgOriginRectBTN_OK.top;
+			rect.bottom = (double)ivalueY * m_DlgOriginRectBTN_OK.bottom;
+			data.bSet = true;
+			//rect.bottom = long((double)(ivalueY / iOriginCY) * rect.bottom);
+		}
+		TRACE(_T("ivaluex:%f"), ivalueX);
+		TRACE(_T("ivalueY:%f"), ivalueY);
+		//bool bMove = ::MoveWindow(p_wnd->GetSafeHwnd(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 1);
+		if (data.bSet)
+		{
+			//p_wnd->SetWindowPos(&wndTop, data.lleftX, data.ltopY  , 88, 25, SWP_SHOWWINDOW | SWP_NOSIZE);
+			CRect test;
+			test.left = 100;
+			test.top = 100;
+			test.right = 125;
+			test.bottom = 125;
+			p_wnd->MoveWindow(&rect);
+		}
+		/*if (bMove)
+		{
+			MessageBoxA(NULL, "Move!", NULL, 0);
+		}*/
+	
+}//精度有问题，客户区有问题
+
+void CwarAppDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
+	if (m_DlgOriginRect.left == 0 && m_DlgOriginRect.right == 0
+		&& m_DlgOriginRect.top == 0 && m_DlgOriginRect.bottom == 0)
+	{
+		goto FINAL;
+	}
+	else
+	{
+		if (cx == 0 && cy == 0)
+		{
+			return;
+		}
+		//test begin
+		
+		CRect picRect;
+		GetDlgItem(IDOK)->GetWindowRect(picRect);
+		char szBuffer[256]{ 0 };
+		sprintf(szBuffer, "left-top:%d-%d \n right-bottom:%d-%d",
+			picRect.left,
+			picRect.top,
+			picRect.right,
+			picRect.bottom);
+		TRACE(_T("m_DlgOriginRect.right:%f"), iOriginCX);
+		TRACE(_T("m_DlgOriginRect.left:%f"), iOriginCX);
+		iOriginCX = m_DlgOriginRect.right - m_DlgOriginRect.left;
+		iOriginCY = m_DlgOriginRect.bottom - m_DlgOriginRect.top;
+		//test end
+		CRect recDlgChangeSize;
+		this->GetClientRect(&recDlgChangeSize);
+		ScreenToClient(&recDlgChangeSize);
+		double lValueCX = recDlgChangeSize.right - recDlgChangeSize.left;
+		double lValueCY = recDlgChangeSize.bottom - recDlgChangeSize.top;
+		RePaint(IDOK, lValueCX,lValueCY);
+		//RePaint(IDCANCEL, cx , cy);
+		//RePaint(IDC_BUTTON1, cx , cy);
+		//RePaint(IDC_PIC_HERO, cx , cy);
+		//UpdateWindow();
+		CDialogEx::OnPaint();
+		return;
+	}
+
+	FINAL:
+	this->GetWindowRect(&m_DlgOriginRect);
+	//UpdateWindow();
+	CDialogEx::OnPaint();
 }

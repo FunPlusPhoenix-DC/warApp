@@ -7,6 +7,14 @@
 class CwarAppDlgAutoProxy;
 
 
+typedef struct newPos {
+	long lleftX;
+	long ltopY;
+	long lwidth;
+	long lheight;
+	bool bSet;
+}NEWPOS, * LPNEWPOS;
+
 // CwarAppDlg 对话框
 class CwarAppDlg : public CDialogEx
 {
@@ -40,9 +48,28 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnClose();
+	
 	virtual void OnOK();
 	virtual void OnCancel();
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButton1();
+
+public:
+	CWnd* p_PictureOfHero; //Hero picture in main.
+
+	HeroMain structHeroState; //Set hero properties struct.
+	
+	CStatic showPicByguide;
+
+	CRect m_DlgOriginRect;
+	CRect m_DlgOriginRectBTN_OK;
+
+	int iOriginCX;
+
+	int iOriginCY;
+
+	void RePaint(UINT ID, double cx, double cy);
+	
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
