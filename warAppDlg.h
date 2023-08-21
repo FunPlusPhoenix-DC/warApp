@@ -65,6 +65,12 @@ public:
 	CRect m_DlgOriginRect;
 	CRect m_DlgOriginRectBTN_OK;
 
+	int iWidgetCount;
+
+	CRect m_WidgetGroup[32]; //every widget's rect;
+
+	CWnd* m_WindowID[32]; // every windows' ID.
+
 	int iOriginCX;
 
 	int iOriginCY;

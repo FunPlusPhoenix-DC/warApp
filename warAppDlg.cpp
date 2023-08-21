@@ -64,7 +64,10 @@ CwarAppDlg::CwarAppDlg(CWnd* pParent /*=nullptr*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pAutoProxy = nullptr;
 	p_PictureOfHero = new CWnd();
-	
+	iOriginCX = 0;
+	iOriginCY = 0;
+	iWidgetCount = 0;
+	::memset(&m_WindowID, 0, sizeof(m_WindowID));
 }
 
 CwarAppDlg::~CwarAppDlg()
@@ -134,6 +137,18 @@ BOOL CwarAppDlg::OnInitDialog()
 	
 
 	// TODO: 在此添加额外的初始化代码
+	CWnd* wndTemp = GetWindow(GW_CHILD);
+	m_WindowID[0] = wndTemp;
+	m_WindowID[0]->GetWindowRect(&m_WidgetGroup[0]);
+	ScreenToClient(&m_WidgetGroup[0]);
+	iWidgetCount = 1;
+	while (wndTemp = wndTemp->GetNextWindow())
+	{
+		m_WindowID[iWidgetCount] = wndTemp;
+		m_WindowID[iWidgetCount]->GetWindowRect(&m_WidgetGroup[iWidgetCount]);
+		ScreenToClient(&m_WidgetGroup[iWidgetCount]);
+		++iWidgetCount;
+	}
 	::GetWindowRect(m_hWnd, m_DlgOriginRect);
 	ScreenToClient(&m_DlgOriginRect);
 	::GetWindowRect(GetDlgItem(IDOK)->m_hWnd, m_DlgOriginRectBTN_OK);
@@ -289,8 +304,6 @@ void CwarAppDlg::OnBnClickedButton1()
 
 	CRect buttonPosition;
 
-	POINT okPosition;
-
 	GetDlgItem(IDOK)->GetWindowRect(&buttonPosition);
 	ScreenToClient(&buttonPosition);
 
@@ -316,15 +329,15 @@ void CwarAppDlg::RePaint(UINT ID, double cx , double cy)
 {
 	CRect rect;
 
-	CWnd* p_wnd = NULL;
+	//CWnd* p_wnd = NULL;
 
-	p_wnd = GetDlgItem(ID);
+	//p_wnd = GetDlgItem(ID);
 
-	if (p_wnd == NULL)
+	/*if (p_wnd == NULL)
 	{
 		MessageBox(_T("No selected ID"), NULL, 0);
 		return;
-	}
+	}*/
 
 	//p_wnd->GetWindowRect(&rect);
 
@@ -332,38 +345,34 @@ void CwarAppDlg::RePaint(UINT ID, double cx , double cy)
 
 		double ivalueX = cx * 1.0 / iOriginCX;
 		double ivalueY = cy * 1.0 / iOriginCY;
-		TRACE(_T("aaaiOriginCX:%f"), iOriginCX);
-		TRACE(_T("aaaiOriginCY:%f"), iOriginCY);
+		TRACE(_T("aaaiOriginCX:%lf\n"), iOriginCX);
+		TRACE(_T("aaaiOriginCY:%lf\n"), iOriginCY);
 		NEWPOS data{ 0 };
 
 		if (ivalueX != 0)
 		{
 			data.lleftX = long((double)ivalueX * rect.left);
 			data.bSet = true;
-			rect.left = (double)ivalueX * m_DlgOriginRectBTN_OK.left;
-			rect.right = (double)ivalueX * m_DlgOriginRectBTN_OK.right;
-			TRACE(_T("m_DlgOriginRectBTN_OK.left:%f"), m_DlgOriginRectBTN_OK.left);
+			rect.left = (long)((double)ivalueX * m_WidgetGroup[ID].left);//m_DlgOriginRectBTN_OK.left;
+			rect.right = (long)((double)ivalueX * m_WidgetGroup[ID].right);//m_DlgOriginRectBTN_OK.right;
+			TRACE(_T("m_WidgetGroup[ID].left:%d\n"), m_WidgetGroup[ID].left);
 		}
 		if (ivalueY != 0)
 		{
 			data.ltopY = long((double)ivalueY * rect.top);
-			rect.top = (double)ivalueY * m_DlgOriginRectBTN_OK.top;
-			rect.bottom = (double)ivalueY * m_DlgOriginRectBTN_OK.bottom;
+			rect.top = (long)((double)ivalueY * m_WidgetGroup[ID].top);
+			rect.bottom = (long)((double)ivalueY * m_WidgetGroup[ID].bottom);
 			data.bSet = true;
 			//rect.bottom = long((double)(ivalueY / iOriginCY) * rect.bottom);
 		}
-		TRACE(_T("ivaluex:%f"), ivalueX);
-		TRACE(_T("ivalueY:%f"), ivalueY);
+		TRACE(_T("ivaluex:%lf\n"), ivalueX);
+		TRACE(_T("ivalueY:%lf\n"), ivalueY);
 		//bool bMove = ::MoveWindow(p_wnd->GetSafeHwnd(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 1);
 		if (data.bSet)
 		{
 			//p_wnd->SetWindowPos(&wndTop, data.lleftX, data.ltopY  , 88, 25, SWP_SHOWWINDOW | SWP_NOSIZE);
-			CRect test;
-			test.left = 100;
-			test.top = 100;
-			test.right = 125;
-			test.bottom = 125;
-			p_wnd->MoveWindow(&rect);
+			//p_wnd->MoveWindow(&rect);
+			m_WindowID[ID]->MoveWindow(&rect);
 		}
 		/*if (bMove)
 		{
@@ -392,27 +401,22 @@ void CwarAppDlg::OnSize(UINT nType, int cx, int cy)
 		
 		CRect picRect;
 		GetDlgItem(IDOK)->GetWindowRect(picRect);
-		char szBuffer[256]{ 0 };
-		sprintf(szBuffer, "left-top:%d-%d \n right-bottom:%d-%d",
-			picRect.left,
-			picRect.top,
-			picRect.right,
-			picRect.bottom);
-		TRACE(_T("m_DlgOriginRect.right:%f"), iOriginCX);
-		TRACE(_T("m_DlgOriginRect.left:%f"), iOriginCX);
+		TRACE(_T("m_DlgOriginRect.right:%d\n"), iOriginCX);
+		TRACE(_T("m_DlgOriginRect.left:%d\n"), iOriginCX);
 		iOriginCX = m_DlgOriginRect.right - m_DlgOriginRect.left;
 		iOriginCY = m_DlgOriginRect.bottom - m_DlgOriginRect.top;
 		//test end
 		CRect recDlgChangeSize;
 		this->GetClientRect(&recDlgChangeSize);
 		ScreenToClient(&recDlgChangeSize);
-		double lValueCX = recDlgChangeSize.right - recDlgChangeSize.left;
-		double lValueCY = recDlgChangeSize.bottom - recDlgChangeSize.top;
-		RePaint(IDOK, lValueCX,lValueCY);
-		//RePaint(IDCANCEL, cx , cy);
-		//RePaint(IDC_BUTTON1, cx , cy);
-		//RePaint(IDC_PIC_HERO, cx , cy);
-		//UpdateWindow();
+		double lfValueCX = recDlgChangeSize.right - recDlgChangeSize.left;
+		double lfValueCY = recDlgChangeSize.bottom - recDlgChangeSize.top;
+		for (int i = 0; i < 32; i++)
+		{
+			if (m_WindowID[i] == nullptr)
+				break;
+			RePaint(i, lfValueCX, lfValueCY);
+		}
 		CDialogEx::OnPaint();
 		return;
 	}
